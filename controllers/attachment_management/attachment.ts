@@ -8,14 +8,18 @@ async function get_presigned_url(req: Request, res: Response, next: NextFunction
     try {
         const {file_name, file_type} = req.body;
 
+        if(!(file_name && file_type)) {
+            return res.status(422).json({"message": "Please send valid file name and file type"});
+        }
+
         //generate unique key for the attachment
         const key = `${randomUUID()}-${file_name}`;
         
         const preSignedUrl = await get_upload_url(key);
 
         return res.status(201).json({
-            preSignedUrl,
-            key: key
+            "s3_url" :preSignedUrl,
+            "s3_key": key
         });
 
     } catch(err) {
@@ -48,16 +52,13 @@ async function upload_attachment(req: Request, res: Response, next: NextFunction
                 s3_url : preSignedUrl
             }
             });
-
-        // await newPost.save();
         
         //add the new post to the user posts list
         user?.posts.push(newPost);
 
         await user?.save();
-        console.log("/////////user: " + user);
 
-        return res.status(201).json(newPost);
+        return res.status(201).json(newPost.toJSON());
 
     } catch(err) {
         next(err);
