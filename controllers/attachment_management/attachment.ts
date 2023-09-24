@@ -30,11 +30,11 @@ async function upload_attachment(req: Request, res: Response, next: NextFunction
         const user = await User.findById(user_id);
 
         if(!user) {
-            return res.status(422).send("User doesn't exist");
+            return res.status(422).json({"message": "User doesn't exist"});
         }
 
         if(!s3_key || !user_id) {
-            return res.status(422).send("s3 key or user id is empty! Please provide valid details");
+            return res.status(422).json({"message": "s3 key or user id is empty! Please provide valid details"});
         }
 
         const preSignedUrl = await get_download_url(s3_key);

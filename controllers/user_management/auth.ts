@@ -12,12 +12,18 @@ async function register(req: Request, res: Response, next: NextFunction) {
         const username: string = req.body.username;
 
         if(!(email && password)) {
-            res.status(422).send("Please enter valid email and password");
+            res.status(422).json({"message": "Please enter valid email and password"});
         }
-        //check if user already exists
-        const existingUser = await User.findOne({email : email});
-        if(existingUser) {
-            return res.status(422).send("User already exists! Please login");
+        //check if user/username already exists
+        const existingUser = await User.findOne({$or: [
+            {email: email},
+            {username: username}
+        ]});
+
+        if(existingUser?.email === email) {
+            return res.status(422).json({"message": "User already exists! Please login"});
+        } else if(existingUser?.username === username) {
+            return res.status(422).json({"message": "Username already exists! Please choose a different username"});
         }
 
         const hash = await bcrypt.hash(password, 10);
@@ -46,7 +52,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
         const email: string = req.body.email;
         const password: string = req.body.password;
         if(!(email && password)) {
-            return res.status(422).send("Please enter valid email and password");
+            return res.status(422).json({"message": "Please enter valid email and password"});
         }
 
         var user = await User.findOne({email : email}).select('password_hash').exec();

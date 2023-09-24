@@ -10,23 +10,26 @@ const userSchema = new mongoose.Schema({
                 return /^(?!.*\.\.)(?!.*\.$)[^\W][\w.]{0,29}$/.test(value);
             },
             message : "Enter valid username"
-        }
+        },
+        unique : [true, "Username already exists! Please choose a different username"]
     },
     email : {
         type : String,
         required : [true, 'email is required'],
-        unique : true,
+        unique : [true, "User already exists! Please login"],
         validate : [
             {
                 validator : function(value: string | any) {
-                return !(value == null || value.length == 0)
-            }, 
-            message : 'email cannot be empty'},
+                    return !(value == null || value.length == 0)
+                }, 
+                message : 'email cannot be empty'
+            },
             {
                 validator : function(value: string) {
                     return (EmailValidator.validate(value))
                 }, 
-                message : 'invalid email!'}
+                message : 'invalid email!'
+            }
         ]
     },
     password_hash : {
