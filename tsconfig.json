@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+      "outDir": "./built",
+      "allowJs": true,
+      "target": "ES6",
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "noImplicitAny": true,
+      "strict": true,
+      "noEmit": true,
+      "allowImportingTsExtensions": true
+    },
+    "ts-node": {
+      "esm": true
+  },
+    // "include": ["./src/**/*"]
+    // "exclude": ["node_modules"]
+  }
