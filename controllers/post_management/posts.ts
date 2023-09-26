@@ -9,14 +9,14 @@ async function get_user_posts(req: Request, res: Response, next: NextFunction) {
         const {id} = req.query;
         
         if(!id) {
-            return res.status(422).json({"message": "missing user id"});
+            return res.status(422).json({"message": "missing query params"});
         }
 
         //get the user
         const user = await User.findById(id);
         
         if(!user) {
-            return res.status(422).json({"mesage": "User not found!"});
+            return res.status(404).json({"mesage": "User not found!"});
         }
 
         const userPosts = user?.posts;
@@ -53,7 +53,7 @@ async function delete_post(req: Request, res: Response, next: NextFunction) {
         //get the user
         const user = await User.findById(user_id);
         if(!user) {
-            return res.status(422).json({"mesage": "User not found!"});
+            return res.status(404).json({"mesage": "User not found!"});
         }
 
         //delete the post

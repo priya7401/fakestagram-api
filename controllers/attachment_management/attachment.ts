@@ -34,7 +34,7 @@ async function upload_attachment(req: Request, res: Response, next: NextFunction
         const user = await User.findById(user_id);
 
         if(!user) {
-            return res.status(422).json({"message": "User doesn't exist"});
+            return res.status(404).json({"message": "User doesn't exist"});
         }
 
         if(!s3_key || !user_id) {

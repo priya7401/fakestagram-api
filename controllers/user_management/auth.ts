@@ -58,7 +58,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
         var user = await User.findOne({email : email}).select('password_hash').exec();
         
         if(!user) {
-            return res.status(422).json({"message" : "user not found"});
+            return res.status(404).json({"message" : "user not found"});
         } 
 
         const match = await bcrypt.compare(password, user?.password_hash ?? "");
