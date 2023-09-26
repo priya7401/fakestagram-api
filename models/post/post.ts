@@ -16,6 +16,10 @@ const postSchema = new mongoose.Schema({
     },
     attachment: {
         type: attachmentSchema
+    },
+    comment_count: {
+        type : Number,
+        default : 0
     }
 }, {timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });

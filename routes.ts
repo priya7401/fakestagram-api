@@ -15,6 +15,7 @@ router.post("/attachment_management/presigned_url", attachment_controller.get_pr
 router.put("/attachment_management/upload_attachment", attachment_controller.upload_attachment);
 
 router.get("/posts", posts_controller.get_user_posts);
+router.delete("/posts", posts_controller.delete_post);
 router.get("/feed");
 
 export default router;

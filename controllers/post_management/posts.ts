@@ -1,6 +1,7 @@
 import {NextFunction, Request, Response } from 'express';
 import User from '../../models/user/user.ts';
 import { get_download_url } from '../../aws-config/aws-config.ts';
+import { Post } from '../../models/post/post.ts';
 
 async function get_user_posts(req: Request, res: Response, next: NextFunction) {
     try {
@@ -40,4 +41,32 @@ async function get_user_posts(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-export {get_user_posts};
+async function delete_post(req: Request, res: Response, next: NextFunction) {
+    try {
+        //get user id
+        const {post_id, user_id} = req.query;
+        
+        if(!(user_id && post_id)) {
+            return res.status(422).json({"message" : "missing query params"});
+        }
+
+        //get the user
+        const user = await User.findById(user_id);
+        if(!user) {
+            return res.status(422).json({"mesage": "User not found!"});
+        }
+
+        //delete the post
+        const post = await Post.findByIdAndDelete(post_id);
+
+        user.posts.pull({_id : post_id});
+
+        await user.save();
+        return res.status(204).send();
+
+    } catch(err) {
+        next(err);
+    }
+}
+
+export {get_user_posts, delete_post};
