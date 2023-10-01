@@ -14,6 +14,9 @@ async function register(req: Request, res: Response, next: NextFunction) {
         if(!(email && password)) {
             res.status(422).json({"message": "Please enter valid email and password"});
         }
+        if(!username) {
+            res.status(422).json({"message": "Please enter username"});
+        }
         //check if user/username already exists
         const existingUser = await User.findOne({$or: [
             {email: email},
@@ -28,15 +31,15 @@ async function register(req: Request, res: Response, next: NextFunction) {
 
         const hash = await bcrypt.hash(password, 10);
 
-        //assign token
-        const token = jwt.sign({email : email}, AppConstants.jwtTokenKey ?? "", {expiresIn : "600s"});
-
         //create new user
         var newUser = await User.create({
             username : username,
             email : email,
             password_hash : hash
         });
+
+        //assign token
+        const token = jwt.sign({email : email, user_id : newUser.id}, AppConstants.jwtTokenKey ?? "", {expiresIn : "600s"});
 
         console.log(newUser);
         return res.status(201).json({"user" : newUser, "token" : token});
@@ -51,11 +54,12 @@ async function login(req: Request, res: Response, next: NextFunction) {
     try {
         const email: string = req.body.email;
         const password: string = req.body.password;
+
         if(!(email && password)) {
             return res.status(422).json({"message": "Please enter valid email and password"});
         }
 
-        var user = await User.findOne({email : email}).select('password_hash').exec();
+        var user = await User.findOne({'email' : email});
         
         if(!user) {
             return res.status(404).json({"message" : "user not found"});
@@ -66,10 +70,13 @@ async function login(req: Request, res: Response, next: NextFunction) {
         if(!match) {
             return res.status(422).json({"message" : "incorrect username or password"});
         }
-        //create token
-        const token = jwt.sign({email : email}, AppConstants.jwtTokenKey ?? "", {expiresIn : "600s"});
 
-        return res.status(201).json({"user" : user, "token" : token});
+        console.log(user);
+
+        //create token
+        const token = jwt.sign({email : email, user_id : user.id}, AppConstants.jwtTokenKey ?? "", {expiresIn : "600s"});
+
+        return res.status(201).json({"user" : user?.toJSON(), "token" : token});
     } catch(error) {
         next(error);
     }

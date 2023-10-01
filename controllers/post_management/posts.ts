@@ -6,14 +6,14 @@ import { Post } from '../../models/post/post.ts';
 async function get_user_posts(req: Request, res: Response, next: NextFunction) {
     try {
         //get user id
-        const {id} = req.query;
-        
-        if(!id) {
-            return res.status(422).json({"message": "missing query params"});
+        const user_id = req.app.locals.user_id;
+
+        if(!user_id) {
+            return res.status(422).json({"message" : "missing query params"});
         }
 
         //get the user
-        const user = await User.findById(id);
+        const user = await User.findById(user_id);
         
         if(!user) {
             return res.status(404).json({"mesage": "User not found!"});
@@ -21,7 +21,7 @@ async function get_user_posts(req: Request, res: Response, next: NextFunction) {
 
         const userPosts = user?.posts;
 
-        if(!userPosts) {
+        if(!userPosts || userPosts.length == 0) {
             return res.status(200).json({"posts": []});
         }
 
@@ -34,7 +34,7 @@ async function get_user_posts(req: Request, res: Response, next: NextFunction) {
         }
 
         await user.save();
-        return res.status(200).json({"posts" : userPosts});
+        return res.status(200).json({"posts" : userPosts}).send();
 
     } catch(err) {
         next(err);
@@ -43,8 +43,9 @@ async function get_user_posts(req: Request, res: Response, next: NextFunction) {
 
 async function delete_post(req: Request, res: Response, next: NextFunction) {
     try {
-        //get user id
-        const {post_id, user_id} = req.query;
+        //get post id and user if
+        const {post_id} = req.query;
+        const user_id = req.app.locals.user_id;
         
         if(!(user_id && post_id)) {
             return res.status(422).json({"message" : "missing query params"});

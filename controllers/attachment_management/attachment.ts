@@ -29,16 +29,22 @@ async function get_presigned_url(req: Request, res: Response, next: NextFunction
 
 async function upload_attachment(req: Request, res: Response, next: NextFunction) {
     try {
-        const {s3_key, user_id, description} = req.body;
+        const {s3_key, description} = req.body;
+
+        const user_id = req.app.locals.user_id;
+
+        if(!user_id) {
+            return res.status(422).json({"message" : "missing query params"});
+        }
+
+        if(!s3_key) {
+            return res.status(422).json({"message": "s3 key is empty! Please provide valid details"});
+        }
 
         const user = await User.findById(user_id);
 
         if(!user) {
             return res.status(404).json({"message": "User doesn't exist"});
-        }
-
-        if(!s3_key || !user_id) {
-            return res.status(422).json({"message": "s3 key or user id is empty! Please provide valid details"});
         }
 
         const preSignedUrl = await get_download_url(s3_key);
