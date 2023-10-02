@@ -1,5 +1,6 @@
 import express, { Router } from "express";
 import * as auth_controller from "./controllers/user_management/auth.ts";
+import * as user_controller from "./controllers/user_management/user.ts";
 import * as attachment_controller from "./controllers/attachment_management/attachment.ts";
 import * as posts_controller from "./controllers/post_management/posts.ts";
 import { verifyToken } from "./app-config/app-config.ts";
@@ -18,5 +19,7 @@ router.get("/post_management/posts", posts_controller.get_user_posts);
 router.put("/post_manamgement/posts/like", posts_controller.like_dislike_post);
 router.delete("/posts", posts_controller.delete_post);
 router.get("/feed");
+
+router.put("/user_management/user/update_profile", user_controller.update_profile);
 
 export default router;

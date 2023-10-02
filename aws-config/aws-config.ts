@@ -24,9 +24,9 @@ async function get_upload_url(key: string) {
     const command = new PutObjectCommand(s3UploadParams);
 
     const preSignedUrl = await getSignedUrl(
-        s3Client, 
-        command, 
-        {expiresIn: 600}
+        s3Client,
+        command,
+        { expiresIn: 600 }
     );
 
     return preSignedUrl;
@@ -34,17 +34,21 @@ async function get_upload_url(key: string) {
 
 async function get_download_url(key: string) {
 
+    if (!key || key === "") {
+        return "";
+    }
+
     s3UploadParams.Key = key;
 
     const command = new GetObjectCommand(s3UploadParams);
 
     const preSignedUrl = await getSignedUrl(
-        s3Client, 
-        command, 
-        {expiresIn: 600}
+        s3Client,
+        command,
+        { expiresIn: 600 }
     );
 
     return preSignedUrl;
 }
 
-export {get_download_url, get_upload_url};
+export { get_download_url, get_upload_url };

@@ -11,8 +11,7 @@ const attachmentSchema = new mongoose.Schema({
         required: true
     },
     s3_url: {
-        type: String,
-        default: ""
+        type: String
     }
 });
 
