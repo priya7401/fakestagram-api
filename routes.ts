@@ -12,9 +12,10 @@ router.post("/user_management/auth/login", auth_controller.login);
 router.use(verifyToken);
 
 router.post("/attachment_management/presigned_url", attachment_controller.get_presigned_url);
-router.put("/attachment_management/upload_attachment", attachment_controller.upload_attachment);
+router.post("/attachment_management/upload_attachment", attachment_controller.upload_attachment);
 
-router.get("/posts", posts_controller.get_user_posts);
+router.get("/post_management/posts", posts_controller.get_user_posts);
+router.put("/post_manamgement/posts/like", posts_controller.like_dislike_post);
 router.delete("/posts", posts_controller.delete_post);
 router.get("/feed");
 
