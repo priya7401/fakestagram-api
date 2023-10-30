@@ -21,5 +21,25 @@ router.delete("/posts", posts_controller.delete_post);
 router.get("/feed");
 
 router.put("/user_management/user/update_profile", user_controller.update_profile);
+router.get(
+  "/user_management/user/follow_requests",
+  user_controller.follow_requests
+);
+router.get(
+  "/user_management/user/follow_suggestions",
+  user_controller.follow_sugestions
+);
+router.get("/user_management/user/followers", user_controller.followers_list);
+router.get("/user_management/user/following", user_controller.following_list);
+router.put("/user_management/user/follow", user_controller.follow_user);
+router.put(
+  "/user_management/user/request",
+  user_controller.accept_reject_request
+);
+router.put("/user_management/user/unfollow", user_controller.unfollow_user);
+router.put(
+  "/user_management/user/remove_follower",
+  user_controller.remove_follower
+);
 
 export default router;
