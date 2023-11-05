@@ -74,14 +74,13 @@ async function follow_requests(
       return res.status(422).json({ message: "missing query params" });
     }
 
-    // const users = await User.findById(user_id)
-    //   .populate({ path: "followers following", options: { _recursed: true } })
-    //   .exec();
-    const users = await User.findById(user_id).populate({
+    const user = await User.findById(user_id).populate({
       path: "follow_requests",
       select: "user_name full_name profile_pic bio",
     });
-    return res.status(200).json({ follow_requests: users });
+    return res
+      .status(200)
+      .json({ follow_requests: user?.follow_requests ?? [] });
   } catch (err) {
     next(err);
   }
@@ -93,16 +92,6 @@ async function follow_sugestions(
   next: NextFunction
 ) {
   try {
-    // //get user id
-    // const user_id = req.app.locals.user_id;
-    // const users = await User.find(
-    //   { _id: { $ne: user_id } },
-    //   "+user_name +full_name +profile_pic"
-    // )
-    //   // .select("+user_name +full_name +profile_pic")
-    //   .exec();
-    // return res.status(200).json({ "follow_suggestions": users });
-
     //get user id
     const user_id = req.app.locals.user_id;
 
@@ -111,17 +100,14 @@ async function follow_sugestions(
     }
 
     const users = await User.findById(user_id)
-      .populate("follow_suggestions", {
-        user_name: 1,
-        full_name: 1,
-        bio: 1,
-        _id: 1,
-        profile_pic: 1,
+      .populate({
+        path: "follow_suggestions",
+        select: "user_name full_name profile_pic bio",
       })
       .exec();
     return res
       .status(200)
-      .json({ "follow_suggestions": users?.follow_suggestions });
+      .json({ "follow_suggestions": users?.follow_suggestions ?? [] });
   } catch (err) {
     next(err);
   }
@@ -140,7 +126,7 @@ async function follow_user(req: Request, res: Response, next: NextFunction) {
     const follower = await User.findByIdAndUpdate(
       follower_id,
       {
-        $push: {
+        $addToSet: {
           follow_requests: user_id,
         },
       },
@@ -157,7 +143,7 @@ async function follow_user(req: Request, res: Response, next: NextFunction) {
         $pull: {
           follow_suggestions: follower_id,
         },
-        $push: {
+        $addToSet: {
           pending_follow_requests: follower_id,
         },
       },
@@ -200,8 +186,11 @@ async function accept_reject_request(
       user = await User.findByIdAndUpdate(
         user_id,
         {
-          $pull: { follow_requests: follower_id },
-          $push: { followers: follower_id },
+          $pull: {
+            follow_requests: follower_id,
+            follow_suggestions: follower_id,
+          },
+          $addToSet: { followers: follower_id },
         },
         { new: true }
       );
@@ -214,6 +203,9 @@ async function accept_reject_request(
         { new: true }
       );
     }
+    await User.findByIdAndUpdate(follower_id, {
+      $pull: { pending_follow_requests: user_id },
+    });
 
     if (!user) {
       return res.status(404).json({ message: "user not found" });
@@ -271,7 +263,7 @@ async function followers_list(req: Request, res: Response, next: NextFunction) {
       path: "followers",
       select: "user_name full_name profile_pic bio",
     });
-    return res.status(200).json({ followers: users });
+    return res.status(200).json({ followers: users?.followers ?? [] });
   } catch (err) {
     next(err);
   }
@@ -290,7 +282,7 @@ async function following_list(req: Request, res: Response, next: NextFunction) {
       path: "following",
       select: "user_name full_name profile_pic bio",
     });
-    return res.status(200).json({ following: users });
+    return res.status(200).json({ following: users?.following ?? [] });
   } catch (err) {
     next(err);
   }

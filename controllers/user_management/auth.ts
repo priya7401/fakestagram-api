@@ -36,17 +36,17 @@ async function register(req: Request, res: Response, next: NextFunction) {
 
     const hash = await bcrypt.hash(password, 10);
 
-    //assign 10 random follow_suggestions initially
+    //assign 15 random follow_suggestions initially
     const follow_suggestions = await User.aggregate([
       { $sample: { size: 15 } },
-    ]);
+    ]).exec();
 
     //create new user
     var newUser = await User.create({
       user_name: username,
       email: email,
       password_hash: hash,
-      follow_suggestions: follow_suggestions,
+      follow_suggestions: follow_suggestions.map((user) => user._id),
     });
 
     //assign token
@@ -90,66 +90,67 @@ async function login(req: Request, res: Response, next: NextFunction) {
 
     //adding random follow suggestions for the time being
     if (user.follow_suggestions.length < 15) {
-      // const follow_suggestions = await User.find({
-      //   _id: { $ne: user._id },
-      // }).populate("follow_suggestions", {
-      //   _id: 1,
-      // }).limit(15).exec();
+      var follow_suggestions = await (
+        await User.aggregate([
+          { $project: { _id: 1 } },
+          {
+            $match: {
+              _id: {
+                $ne: new mongoose.Types.ObjectId(user._id),
+              },
+            },
+          },
+          {
+            $match: {
+              $expr: {
+                $not: [{ $in: ["$_id", user.pending_follow_requests] }],
+              },
+            },
+          },
+          {
+            $match: {
+              $expr: {
+                $not: [{ $in: ["$_id", user.followers] }],
+              },
+            },
+          },
+          {
+            $match: {
+              $expr: {
+                $not: [{ $in: ["$_id", user.following] }],
+              },
+            },
+          },
+          {
+            $match: {
+              $expr: {
+                $not: [{ $in: ["$_id", user.follow_requests] }],
+              },
+            },
+          },
+          { $sample: { size: 15 } },
+        ])
+      ).map((user) => {
+        return user._id;
+      });
 
-      // user.follow_suggestions = follow_suggestions;
-      // await user.save();
-
-      const follow_suggestions = await User.aggregate([
+      user = await User.findByIdAndUpdate(
+        user._id,
         {
-          $match: {
-            _id: {
-              $ne: new mongoose.Types.ObjectId(user._id),
-            },
-          },
+          follow_suggestions: follow_suggestions,
         },
-        {
-          $match: {
-            $expr: {
-              $not: [{ $in: ["$_id", user.pending_follow_requests] }],
-            },
-          },
-        },
-        {
-          $match: {
-            $expr: {
-              $not: [{ $in: ["$_id", user.followers] }],
-            },
-          },
-        },
-        {
-          $match: {
-            $expr: {
-              $not: [{ $in: ["$_id", user.following] }],
-            },
-          },
-        },
-        {
-          $match: {
-            $expr: {
-              $not: [{ $in: ["$_id", user.follow_requests] }],
-            },
-          },
-        },
-        { $sample: { size: 15 } },
-      ]);
-
-      user.follow_suggestions = follow_suggestions;
-      await user.save();
+        { new: true }
+      );
     }
-
-    console.log(user);
 
     //create token
     const token = jwt.sign(
-      { email: email, user_id: user.id },
+      { email: email, user_id: user?.id },
       AppConstants.jwtTokenKey ?? "",
       { expiresIn: "600s" }
     );
+
+    console.log(user);
 
     return res.status(201).json({ "user": user?.toJSON(), "token": token });
   } catch (error) {
