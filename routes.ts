@@ -7,19 +7,23 @@ import { verifyToken } from "./app-config/app-config.ts";
 
 const router: Router = express.Router();
 
+// user_management/auth
 router.post("/user_management/auth/register", auth_controller.register);
 router.post("/user_management/auth/login", auth_controller.login);
 
 router.use(verifyToken);
 
+// attachment_management
 router.post("/attachment_management/presigned_url", attachment_controller.get_presigned_url);
 router.post("/attachment_management/upload_attachment", attachment_controller.upload_attachment);
 
+// post_management
 router.get("/post_management/posts", posts_controller.get_user_posts);
 router.put("/post_manamgement/posts/like", posts_controller.like_dislike_post);
-router.delete("/posts", posts_controller.delete_post);
+router.delete("/post_manamgement/posts", posts_controller.delete_post);
 router.get("/feed");
 
+// user_management/user
 router.put("/user_management/user/update_profile", user_controller.update_profile);
 router.get(
   "/user_management/user/follow_requests",

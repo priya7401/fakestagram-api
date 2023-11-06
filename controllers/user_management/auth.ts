@@ -90,7 +90,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
 
     //adding random follow suggestions for the time being
     if (user.follow_suggestions.length < 15) {
-      var follow_suggestions = await (
+      var follow_suggestions = await(
         await User.aggregate([
           { $project: { _id: 1 } },
           {

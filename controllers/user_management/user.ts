@@ -150,10 +150,6 @@ async function follow_user(req: Request, res: Response, next: NextFunction) {
       { new: true }
     );
 
-    //add the user's request to follower's follow_request
-    // follower?.follow_requests.push(user_id);
-    // follower.save();
-
     return res.status(201).json({ "user": user?.toJSON() });
   } catch (err) {
     next(err);
@@ -175,7 +171,9 @@ async function accept_reject_request(
       return res.status(422).json({ message: "missing params" });
     }
 
-    const follower = await User.findById(follower_id);
+    const follower = await User.findByIdAndUpdate(follower_id, {
+      $pull: { pending_follow_requests: user_id },
+    });
     if (!follower) {
       return res.status(404).json({ message: "invalid follower id" });
     }
@@ -203,9 +201,6 @@ async function accept_reject_request(
         { new: true }
       );
     }
-    await User.findByIdAndUpdate(follower_id, {
-      $pull: { pending_follow_requests: user_id },
-    });
 
     if (!user) {
       return res.status(404).json({ message: "user not found" });
@@ -240,6 +235,12 @@ async function unfollow_user(req: Request, res: Response, next: NextFunction) {
       },
       { new: true }
     );
+
+    await User.findByIdAndUpdate(follower_id, {
+      $pull: {
+        followers: user_id,
+      },
+    });
 
     if (!user) {
       return res.status(404).json({ message: "user not found" });
@@ -319,17 +320,11 @@ async function remove_follower(
     );
 
     //remove curr user from the follower's following list
-    await follower.updateOne({
+    await User.findByIdAndUpdate(follower_id, {
       $pull: {
-        following: follower_id,
+        following: user_id,
       },
     });
-
-    // await User.findByIdAndRemove(follower_id, {
-    //   $pull: {
-    //     following: follower_id,
-    //   },
-    // });
 
     if (!user) {
       return res.status(404).json({ message: "user not found" });
