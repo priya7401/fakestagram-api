@@ -192,6 +192,11 @@ async function accept_reject_request(
         },
         { new: true }
       );
+      await User.findByIdAndUpdate(follower_id, {
+        $addToSet: {
+          following: user_id,
+        },
+      });
     } else {
       user = await User.findByIdAndUpdate(
         user_id,
@@ -221,10 +226,7 @@ async function unfollow_user(req: Request, res: Response, next: NextFunction) {
       return res.status(422).json({ message: "missing params" });
     }
 
-    const follower = await User.findById(follower_id);
-    if (!follower) {
-      return res.status(404).json({ message: "invalid follower id" });
-    }
+    // const follower = await User.findById(follower_id);
 
     var user = await User.findByIdAndUpdate(
       user_id,
@@ -236,15 +238,20 @@ async function unfollow_user(req: Request, res: Response, next: NextFunction) {
       { new: true }
     );
 
-    await User.findByIdAndUpdate(follower_id, {
+    if (!user) {
+      return res.status(404).json({ message: "user not found" });
+    }
+
+    const follower = await User.findByIdAndUpdate(follower_id, {
       $pull: {
         followers: user_id,
       },
     });
 
-    if (!user) {
-      return res.status(404).json({ message: "user not found" });
+    if (!follower) {
+      return res.status(404).json({ message: "invalid follower id" });
     }
+
     return res.status(201).json({ user: user.toJSON() });
   } catch (err) {
     next(err);
