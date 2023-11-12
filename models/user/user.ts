@@ -79,6 +79,10 @@ const userSchema = new mongoose.Schema(
       ref: "User",
       default: [],
     },
+    is_public: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: { createdAt: "created_at", updatedAt: "updated_at" },

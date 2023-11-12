@@ -1,6 +1,48 @@
 import { NextFunction, Request, Response } from 'express';
 import User from '../../models/user/user.ts';
 import { get_download_url } from '../../aws-config/aws-config.ts';
+import mongoose from "mongoose";
+
+async function get_user_details(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    //get user id
+    const user_id = req.app.locals.user_id;
+    const { follower_id } = req.query;
+
+    if (!user_id) {
+      return res.status(422).json({ "message": "missing query params" });
+    }
+
+    if (follower_id && !mongoose.isValidObjectId(follower_id)) {
+      return res
+        .status(422)
+        .json({ "message": "invalid query params follower_id" });
+    }
+
+    //if follower_id is not null, get follower/following details, else get user details
+    if (follower_id && mongoose.isValidObjectId(follower_id)) {
+      const follower = await User.findById(follower_id)
+        .select("-follow_requests -follow_suggestions -pending_follow_requests")
+        .exec();
+      if (!follower) {
+        return res.status(422).json({ message: "User not found!" });
+      }
+      return res.status(200).json({ "user": follower.toJSON() });
+    } else {
+      const user = await User.findById(user_id);
+      if (!user) {
+        return res.status(422).json({ message: "User not found!" });
+      }
+      return res.status(200).json({ "user": user.toJSON() });
+    }
+  } catch (err) {
+    next(err);
+  }
+}
 
 async function update_profile(req: Request, res: Response, next: NextFunction) {
   try {
@@ -343,6 +385,7 @@ async function remove_follower(
 }
 
 export {
+  get_user_details,
   update_profile,
   follow_user,
   accept_reject_request,

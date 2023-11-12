@@ -24,6 +24,10 @@ router.delete("/post_manamgement/posts", posts_controller.delete_post);
 router.get("/feed");
 
 // user_management/user
+router.get(
+  "/user_management/user/user_details",
+  user_controller.get_user_details
+);
 router.put("/user_management/user/update_profile", user_controller.update_profile);
 router.get(
   "/user_management/user/follow_requests",
