@@ -4,6 +4,7 @@ import AppConstants from "../../app_constants.ts";
 import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from 'express';
 import mongoose from "mongoose";
+import { get_download_url } from "../../aws-config/aws-config.ts";
 
 async function register(req: Request, res: Response, next: NextFunction) {
   try {
@@ -90,7 +91,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
 
     //adding random follow suggestions for the time being
     if (user.follow_suggestions.length < 15) {
-      var follow_suggestions = await(
+      var follow_suggestions = await (
         await User.aggregate([
           { $project: { _id: 1 } },
           {
@@ -141,6 +142,12 @@ async function login(req: Request, res: Response, next: NextFunction) {
         },
         { new: true }
       );
+    }
+
+    if (user?.profile_pic?.s3_key != null) {
+      const preSignedUrl = await get_download_url(user.profile_pic?.s3_key);
+      user.profile_pic.s3_url = preSignedUrl;
+      await user.save();
     }
 
     //create token

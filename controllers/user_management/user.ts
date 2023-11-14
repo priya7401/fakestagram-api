@@ -31,11 +31,23 @@ async function get_user_details(
       if (!follower) {
         return res.status(422).json({ message: "User not found!" });
       }
+      if (follower.profile_pic?.s3_key) {
+        const preSignedUrl = await get_download_url(
+          follower.profile_pic?.s3_key
+        );
+        follower.profile_pic.s3_url = preSignedUrl;
+        await follower.save();
+      }
       return res.status(200).json({ "user": follower.toJSON() });
     } else {
       const user = await User.findById(user_id);
       if (!user) {
         return res.status(422).json({ message: "User not found!" });
+      }
+      if (user.profile_pic?.s3_key) {
+        const preSignedUrl = await get_download_url(user.profile_pic?.s3_key);
+        user.profile_pic.s3_url = preSignedUrl;
+        await user.save();
       }
       return res.status(200).json({ "user": user.toJSON() });
     }
@@ -48,25 +60,28 @@ async function update_profile(req: Request, res: Response, next: NextFunction) {
   try {
     //get user id
     const user_id = req.app.locals.user_id;
+    const bio: string = req.body.bio;
+    const s3_key: string = req.body.s3_key;
+    const full_name: string = req.body.full_name;
+    const user_name: string = req.body.user_name;
+    const email: string = req.body.email;
+    const is_public: boolean = req.body.is_public;
 
     if (!user_id) {
       return res.status(422).json({ message: "missing query params" });
     }
 
-    const bio: string = req.body.bio;
-    const s3_key: string = req.body.s3_key;
-    const full_name: string = req.body.full_name;
-    const user_name: string = req.body.user_name;
+    var user = await User.findById(user_id);
 
-    if (user_name != undefined && user_name != "") {
+    if (!user) {
+      return res.status(404).json({ message: "user not found" });
+    }
+
+    if (user_name && user_name != "") {
       //check if username already exists
-      const existingUser = await User.findOne({ username: user_name });
+      const existingUser = await User.findOne({ user_name: user_name });
 
-      if (
-        user_name &&
-        existingUser?.user_name === user_name &&
-        existingUser.id != user_id
-      ) {
+      if (existingUser?.user_name === user_name && existingUser.id != user_id) {
         return res.status(422).json({
           message:
             "Username already exists! Please choose a different username",
@@ -74,10 +89,15 @@ async function update_profile(req: Request, res: Response, next: NextFunction) {
       }
     }
 
-    var user = await User.findById(user_id);
+    if (email && email != "") {
+      //check if username already exists
+      const existingUser = await User.findOne({ email: email });
 
-    if (!user) {
-      return res.status(404).json({ message: "user not found" });
+      if (existingUser?.email === email && existingUser.id != user_id) {
+        return res.status(422).json({
+          message: "Email already exists! Please enter a different email",
+        });
+      }
     }
 
     if (s3_key) {
@@ -87,14 +107,20 @@ async function update_profile(req: Request, res: Response, next: NextFunction) {
         s3_url: preSignedUrl,
       };
     }
-    if (bio != undefined) {
+    if (bio) {
       user.bio = bio;
     }
-    if (full_name != undefined) {
+    if (full_name) {
       user.full_name = full_name;
     }
-    if (user_name != undefined && user_name) {
+    if (user_name) {
       user.user_name = user_name;
+    }
+    if (email) {
+      user.email = email;
+    }
+    if (is_public != undefined) {
+      user.is_public = is_public;
     }
     await user.save();
     return res.status(201).json({ user: user?.toJSON() });
