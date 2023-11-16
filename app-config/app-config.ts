@@ -12,29 +12,42 @@ interface CustomJwtPayload extends jwt.JwtPayload {
 
 const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let token = req.headers.authorization ?? "";
-        token = token.split(' ')[1];    //remove "Bearer" string from token
-        if (!token) {
-            return res.status(401).send("Unauthorized request");
+      let token = req.headers.authorization ?? "";
+      token = token.split(" ")[1]; //remove "Bearer" string from token
+      if (!token) {
+        return res.status(401).send("Unauthorized request");
+      }
+
+      const decoded = jwt.verify(
+        token,
+        AppConstants.jwtTokenKey ?? ""
+      ) as CustomJwtPayload;
+
+      if (decoded.user_id) {
+        //local variable, available only through the lifetime of the request
+        req.app.locals.user_id = decoded.user_id;
+      } else {
+        return res.status(401).send("Unauthorized request");
+      }
+
+      //   check if user exists in db
+      const user = await User.findById(decoded.user_id);
+
+      if (!user) {
+        return res.status(404).json({ "mesage": "User not found!" });
+      }
+
+      //if the user has logged out and logs back in with the same token
+      //(before the expiry time defined in the jwt token during signing the token),
+      //this check is used to prevent the same
+      if (user.invalidate_before) {
+        const date = new Date().toUTCString();
+        if (date >= user.invalidate_before) {
+          console.log("inside if statement");
+          return res.status(401).send("Unauthorized request");
         }
-
-        const decoded = jwt.verify(token, AppConstants.jwtTokenKey ?? "") as CustomJwtPayload;
-
-        if (decoded.user_id) {
-            //local variable, available only through the lifetime of the request
-            req.app.locals.user_id = decoded.user_id;
-        } else {
-            return res.status(401).send("Unauthorized request");
-        }
-
-        //check if user exists in db
-        const user = await User.findById(decoded.user_id);
-
-        if (!user) {
-            return res.status(404).json({ "mesage": "User not found!" });
-        }
-        next();
-
+      }
+      next();
     } catch (err) {
         console.log(err);
         return res.status(401).send("Unauthorized request");

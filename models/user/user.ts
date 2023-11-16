@@ -83,6 +83,9 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    invalidate_before: {
+      type: String,
+    },
   },
   {
     timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
@@ -91,10 +94,11 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.methods.toJSON = function () {
-    var obj = this.toObject();
-    delete obj.password_hash;
-    return obj;
-}
+  var obj = this.toObject();
+  delete obj.password_hash;
+  delete obj.invalidate_before;
+  return obj;
+};
 
 const User = mongoose.model("User", userSchema);
 

@@ -56,6 +56,10 @@ async function register(req: Request, res: Response, next: NextFunction) {
       AppConstants.jwtTokenKey ?? "",
       { expiresIn: "600s" }
     );
+    const time = new Date();
+    time.setUTCSeconds(time.getUTCSeconds() + 600);
+    newUser.invalidate_before = time.toUTCString();
+    await newUser.save();
 
     console.log(newUser);
     return res.status(201).json({ user: newUser.toJSON(), token: token });
@@ -144,10 +148,10 @@ async function login(req: Request, res: Response, next: NextFunction) {
       );
     }
 
-    if (user?.profile_pic?.s3_key != null) {
+    if (user && user?.profile_pic?.s3_key != null) {
       const preSignedUrl = await get_download_url(user.profile_pic?.s3_key);
       user.profile_pic.s3_url = preSignedUrl;
-      await user.save();
+      // await user.save();
     }
 
     //create token
@@ -156,6 +160,12 @@ async function login(req: Request, res: Response, next: NextFunction) {
       AppConstants.jwtTokenKey ?? "",
       { expiresIn: "600s" }
     );
+    if (user) {
+      const time = new Date();
+      time.setUTCSeconds(time.getUTCSeconds() + 600);
+      user.invalidate_before = time.toUTCString();
+      await user?.save();
+    }
 
     console.log(user);
 
@@ -165,4 +175,23 @@ async function login(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export { register, login };
+async function logout(req: Request, res: Response, next: NextFunction) {
+  try {
+    //get user id
+    const user_id = req.app.locals.user_id;
+
+    if (!user_id) {
+      return res.status(422).json({ "message": "missing query params" });
+    }
+
+    await User.findByIdAndUpdate(user_id, {
+      invalidate_before: new Date().toUTCString(),
+    });
+
+    return res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+}
+
+export { register, login, logout };
