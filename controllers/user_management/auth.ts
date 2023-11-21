@@ -1,8 +1,8 @@
-import User from "../../models/user/user.ts";
+import { User } from "../../models/user/user.ts";
 import bcrypt from "bcrypt";
 import AppConstants from "../../app_constants.ts";
 import jwt from "jsonwebtoken";
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
 import { get_download_url } from "../../aws-config/aws-config.ts";
 

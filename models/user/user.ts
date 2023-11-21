@@ -1,6 +1,25 @@
 import mongoose from "mongoose";
 import * as EmailValidator from 'email-validator';
-import { attachmentSchema } from "../attachment/attachment.ts";
+import {
+  AttachmentInterface,
+  attachmentSchema,
+} from "../attachment/attachment.ts";
+
+interface UserInterface {
+  user_name: string;
+  full_name: string;
+  email: string;
+  password_hash: string;
+  profile_pic: AttachmentInterface;
+  bio: string;
+  followers: [mongoose.Schema.Types.ObjectId];
+  following: [mongoose.Schema.Types.ObjectId];
+  follow_requests: [mongoose.Schema.Types.ObjectId];
+  follow_suggestions: [mongoose.Schema.Types.ObjectId];
+  pending_follow_requests: [mongoose.Schema.Types.ObjectId];
+  is_public: boolean;
+  invalidate_before: string;
+}
 
 const userSchema = new mongoose.Schema(
   {
@@ -100,6 +119,6 @@ userSchema.methods.toJSON = function () {
   return obj;
 };
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model<UserInterface>("User", userSchema);
 
-export default User;
+export { User, UserInterface };

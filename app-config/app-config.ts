@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import AppConstants from "../app_constants.ts";
 import { Error } from 'mongoose';
 import { MongoError } from 'mongodb';
-import User from "../models/user/user.ts";
+import { User } from "../models/user/user.ts";
 
 interface CustomJwtPayload extends jwt.JwtPayload {
     user_id: string,
@@ -43,7 +43,6 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
       if (user.invalidate_before) {
         const date = new Date().toUTCString();
         if (date >= user.invalidate_before) {
-          console.log("inside if statement");
           return res.status(401).send("Unauthorized request");
         }
       }

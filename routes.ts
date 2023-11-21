@@ -20,9 +20,9 @@ router.post("/attachment_management/upload_attachment", attachment_controller.up
 
 // post_management
 router.get("/post_management/posts", posts_controller.get_user_posts);
-router.put("/post_manamgement/posts/like", posts_controller.like_dislike_post);
-router.delete("/post_manamgement/posts", posts_controller.delete_post);
-router.get("/feed");
+router.put("/post_management/posts/like", posts_controller.like_dislike_post);
+router.delete("/post_management/posts", posts_controller.delete_post);
+router.get("/post_management/feed", posts_controller.get_feed);
 
 // user_management/user
 router.get(

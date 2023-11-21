@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import User from '../../models/user/user.ts';
+import { User } from "../../models/user/user.ts";
 import { get_download_url } from '../../aws-config/aws-config.ts';
 import mongoose from "mongoose";
 

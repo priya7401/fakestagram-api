@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
-interface Attachment {
-    s3_key: string,
-    s3_url: string
+interface AttachmentInterface {
+  s3_key: string;
+  s3_url: string;
 }
 
 const attachmentSchema = new mongoose.Schema({
@@ -15,4 +15,4 @@ const attachmentSchema = new mongoose.Schema({
     }
 });
 
-export { attachmentSchema, Attachment };
+export { attachmentSchema, AttachmentInterface };

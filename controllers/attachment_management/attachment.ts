@@ -44,12 +44,12 @@ async function upload_attachment(req: Request, res: Response, next: NextFunction
 
         //create new post
         const newPost = await Post.create({
-            user_id: user_id as String,
-            description: description as String,
-            attachment: {
-                s3_key: s3_key,
-                s3_url: preSignedUrl
-            }
+          user_id: user_id as String,
+          description: description as String,
+          attachment: {
+            s3_key: s3_key,
+            s3_url: preSignedUrl,
+          },
         });
 
         return res.status(201).json(newPost.toJSON());
