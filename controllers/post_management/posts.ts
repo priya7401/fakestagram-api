@@ -34,7 +34,9 @@ async function get_user_posts(req: Request, res: Response, next: NextFunction) {
         return res.status(422).json({ "message": "User not found!" });
       }
       if (follower?.is_public || follower.followers.includes(user_id)) {
-        userPosts = await Post.find({ user_id: follower_id });
+        userPosts = await Post.find({ user_id: follower_id }).populate({
+          path: "user_id",
+        });
       } else {
         userPosts = [];
       }
@@ -58,6 +60,10 @@ async function get_user_posts(req: Request, res: Response, next: NextFunction) {
       }
       //update if current user has liked this post or not
       customPost.user_liked = post.user_likes.includes(user_id) ?? false;
+      if (follower_id && mongoose.isValidObjectId(follower_id)) {
+        customPost.user_id = post.user_id._id;
+        customPost.user_details = post.user_id;
+      }
       posts.push(customPost);
     }
 
