@@ -8,7 +8,9 @@
       "noImplicitAny": true,
       "strict": true,
       "noEmit": true,
-      "allowImportingTsExtensions": true
+      "allowImportingTsExtensions": true,
+      "resolveJsonModule": true,
+      "esModuleInterop": true,
     },
     "ts-node": {
       "esm": true

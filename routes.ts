@@ -13,6 +13,7 @@ router.post("/user_management/auth/login", auth_controller.login);
 
 router.use(verifyToken);
 router.delete("/user_management/auth/logout", auth_controller.logout);
+router.post("/user_management/auth/device", auth_controller.device_id);
 
 // attachment_management
 router.post("/attachment_management/presigned_url", attachment_controller.get_presigned_url);

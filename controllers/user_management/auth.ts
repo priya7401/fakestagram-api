@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
 import { get_download_url } from "../../aws-config/aws-config.ts";
+import { Device } from "../../models/user/device_detail.ts";
 
 async function register(req: Request, res: Response, next: NextFunction) {
   try {
@@ -194,4 +195,34 @@ async function logout(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export { register, login, logout };
+async function device_id(req: Request, res: Response, next: NextFunction) {
+  try {
+    //get user id
+    const user_id = req.app.locals.user_id;
+    const platform: string = req.body.platform;
+    const fcm_device_token: string = req.body.fcm_device_token;
+
+    if (!user_id) {
+      return res.status(422).json({ "message": "missing query params" });
+    }
+
+    // create new device_detail object if it does not exist for the user,
+    // else update device_details and token for existing user
+    const device_details = await Device.findOneAndUpdate(
+      { user_id: user_id },
+      {
+        platform: platform,
+        fcm_device_token: fcm_device_token,
+      },
+      { new: true, upsert: true }
+    );
+
+    console.log(device_details);
+
+    return res.status(201).json({ "device_details": device_details.toJSON() });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export { register, login, logout, device_id };

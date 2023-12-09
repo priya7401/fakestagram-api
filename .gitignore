@@ -1,2 +1,5 @@
 .env
 node_modules
+
+#firebase admin secret key
+firebase-config/social-media-app-ac32b-firebase-adminsdk-9uodr-53bcb88667.json
