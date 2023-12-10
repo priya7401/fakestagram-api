@@ -6,6 +6,7 @@ import { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
 import { get_download_url } from "../../aws-config/aws-config.ts";
 import { Device } from "../../models/user/device_detail.ts";
+import { createNewToken } from "../../app-config/app-config.ts";
 
 async function register(req: Request, res: Response, next: NextFunction) {
   try {
@@ -51,15 +52,9 @@ async function register(req: Request, res: Response, next: NextFunction) {
       follow_suggestions: follow_suggestions.map((user) => user._id),
     });
 
-    //assign token
-    const token = jwt.sign(
-      { email: email, user_id: newUser.id },
-      AppConstants.jwtTokenKey ?? "",
-      { expiresIn: "600s" }
-    );
-    const time = new Date();
-    time.setUTCSeconds(time.getUTCSeconds() + 600);
-    newUser.invalidate_before = time.toUTCString();
+    //create token
+    const { token, invalidate_before } = createNewToken(email, newUser?.id);
+    newUser.invalidate_before = invalidate_before;
     await newUser.save();
 
     console.log(newUser);
@@ -152,19 +147,12 @@ async function login(req: Request, res: Response, next: NextFunction) {
     if (user && user?.profile_pic?.s3_key != null) {
       const preSignedUrl = await get_download_url(user.profile_pic?.s3_key);
       user.profile_pic.s3_url = preSignedUrl;
-      // await user.save();
     }
 
     //create token
-    const token = jwt.sign(
-      { email: email, user_id: user?.id },
-      AppConstants.jwtTokenKey ?? "",
-      { expiresIn: "600s" }
-    );
+    const { token, invalidate_before } = createNewToken(email, user?.id);
     if (user) {
-      const time = new Date();
-      time.setUTCSeconds(time.getUTCSeconds() + 600);
-      user.invalidate_before = time.toUTCString();
+      user.invalidate_before = invalidate_before;
       await user?.save();
     }
 
