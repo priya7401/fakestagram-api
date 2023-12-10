@@ -1,10 +1,7 @@
-// var admin = require("firebase-admin");
 import admin, { ServiceAccount } from "firebase-admin";
 import { MulticastMessage } from "firebase-admin/messaging";
 import { DeviceInterface } from "../models/user/device_detail.ts";
 import serviceAccount from "./social-media-app-ac32b-firebase-adminsdk-9uodr-53bcb88667.json" assert { type: "json" };
-
-// var serviceAccount = require("firebase-config/social-media-app-ac32b-firebase-adminsdk-9uodr-53bcb88667.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount as ServiceAccount),

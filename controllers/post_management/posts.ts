@@ -75,7 +75,7 @@ async function get_user_posts(req: Request, res: Response, next: NextFunction) {
 
 async function delete_post(req: Request, res: Response, next: NextFunction) {
   try {
-    //get post id and user if
+    //get post id and user id
     const { post_id } = req.query;
     const user_id = req.app.locals.user_id;
 
@@ -153,7 +153,7 @@ async function get_feed(req: Request, res: Response, next: NextFunction) {
     }
 
     // 1. get all posts that are public
-    // 2. get NEW posts of users that the current user is following
+    // 2. get NEW posts of users that the current user is following - handled in FE when push notification is sent
 
     let posts = [];
 
@@ -188,7 +188,14 @@ async function get_feed(req: Request, res: Response, next: NextFunction) {
         // "user_id": {"_id": "..."}
         //FE needs to receive "user_id" as a string and not an object
         customPost.user_id = post.user_id._id;
-        customPost.user_details = post.user_id;
+        var userDetails: UserInterface | any = post.user_id;
+        if (userDetails.profile_pic && userDetails.profile_pic.s3_key) {
+          const profilePicPreSignedUrl = await get_download_url(
+            post.attachment?.s3_key ?? ""
+          );
+          userDetails.profile_pic.s3_url = profilePicPreSignedUrl;
+        }
+        customPost.user_details = userDetails;
         feed.push(customPost);
       }
     }
@@ -199,4 +206,48 @@ async function get_feed(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export { get_user_posts, delete_post, like_dislike_post, get_feed };
+async function get_post(req: Request, res: Response, next: NextFunction) {
+  try {
+    // get post id and user id
+    const { post_id } = req.query;
+    const user_id = req.app.locals.user_id;
+
+    if (!(user_id && post_id)) {
+      return res.status(422).json({ "message": "missing query params" });
+    }
+
+    // get the post
+    var post = await Post.findById(post_id).populate({
+      path: "user_id",
+    });
+
+    if (post != null) {
+      var customPost: CustomPost = post.toObject();
+      const preSignedUrl = await get_download_url(
+        post.attachment?.s3_key ?? ""
+      );
+      if (post.attachment) {
+        customPost.attachment.s3_url = preSignedUrl;
+      }
+      //update if current user has liked this post or not
+      customPost.user_liked = post.user_likes.includes(user_id) ?? false;
+      var userDetails: UserInterface | any = post.user_id;
+      customPost.user_id = userDetails._id;
+      if (userDetails.profile_pic && userDetails.profile_pic.s3_key) {
+        const profilePicPreSignedUrl = await get_download_url(
+          post.attachment?.s3_key ?? ""
+        );
+        userDetails.profile_pic.s3_url = profilePicPreSignedUrl;
+      }
+      customPost.user_details = userDetails;
+    } else {
+      return res.status(404).json({ "mesage": "Post not found!" });
+    }
+
+    return res.status(200).json({ "post": customPost });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export { get_user_posts, delete_post, like_dislike_post, get_feed, get_post };

@@ -6,13 +6,14 @@ interface AttachmentInterface {
 }
 
 const attachmentSchema = new mongoose.Schema({
-    s3_key: {
-        type: String,
-        required: true
-    },
-    s3_url: {
-        type: String
-    }
+  s3_key: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  s3_url: {
+    type: String,
+  },
 });
 
 export { attachmentSchema, AttachmentInterface };
