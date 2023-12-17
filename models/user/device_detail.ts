@@ -1,4 +1,4 @@
-import mongoose, { Mongoose } from "mongoose";
+import mongoose from "mongoose";
 
 interface DeviceInterface {
   platform: string;
@@ -9,7 +9,7 @@ interface DeviceInterface {
 const deviceSchema = new mongoose.Schema({
   platform: {
     type: String,
-    enum: ["android", "iOS"],
+    enum: ["android", "ios"],
   },
   fcm_device_token: {
     type: String,
@@ -19,6 +19,7 @@ const deviceSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
+    unique: true,
   },
 });
 

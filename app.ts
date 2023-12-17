@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import router from "./routes.js";
 import morgan from "morgan";
-import AppConstants from "./app_constants.js";
+import { AppConstants } from "./app_constants.js";
 import { errorHandler } from "./app-config/app-config.ts";
 
 

@@ -1,12 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import AppConstants from "../app_constants.ts";
+import { AppConstants } from "../app_constants.ts";
 import mongoose, { Error } from "mongoose";
 import { MongoError } from "mongodb";
 import { User } from "../models/user/user.ts";
 
 interface CustomJwtPayload extends jwt.JwtPayload {
-  user_id: string;
   email: string;
 }
 
@@ -36,6 +35,8 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     if (!user) {
       return res.status(404).json({ "mesage": "User not found!" });
     }
+
+    req.app.locals.user = user;
 
     //if the user has logged out and logs back in with the same token
     //(before the expiry time defined in the jwt token during signing the token),

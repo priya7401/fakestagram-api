@@ -13,4 +13,10 @@ const AppConstants = {
     AWSbucket : process.env.S3_BUCKET
 }
 
-export default AppConstants;
+enum NotificationType {
+  new_post,
+  follow_request,
+  post_like,
+}
+
+export { AppConstants, NotificationType };

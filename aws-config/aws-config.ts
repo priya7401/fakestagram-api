@@ -1,6 +1,6 @@
 import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import AppConstants from '../app_constants.ts';
+import { AppConstants } from "../app_constants.ts";
 
 const s3Client = new S3Client({
     credentials: {

@@ -3,6 +3,9 @@ import { get_download_url } from '../../aws-config/aws-config.ts';
 import { Post, PostInterface } from '../../models/post/post.ts';
 import { User, UserInterface } from "../../models/user/user.ts";
 import mongoose from "mongoose";
+import sendNotification from "../../firebase-config/firebase-config.ts";
+import { Device, DeviceInterface } from "../../models/user/device_detail.ts";
+import { NotificationType } from "../../app_constants.ts";
 
 interface CustomPost extends PostInterface {
   user_liked: boolean;
@@ -97,9 +100,9 @@ async function like_dislike_post(
   next: NextFunction
 ) {
   try {
-    //get post id and user if
+    //get post id and user id
     const { post_id } = req.query;
-    const user_id = req.app.locals.user_id;
+    const { user_id, user } = req.app.locals;
 
     if (!(user_id && post_id)) {
       return res.status(422).json({ "message": "missing query params" });
@@ -135,6 +138,24 @@ async function like_dislike_post(
         { new: true }
       ).lean();
       updatedPost.user_liked = true;
+
+      // notify user abt the like activity
+
+      // get device details of the user whose post the current user liked
+      const deviceDetails: DeviceInterface | any = await Device.findOne({
+        user_id: existingPost.user_id,
+      });
+
+      console.log(deviceDetails);
+
+      if (deviceDetails) {
+        await sendNotification(
+          [deviceDetails],
+          user,
+          NotificationType.post_like,
+          existingPost
+        );
+      }
     }
 
     return res.status(201).json({ "post": updatedPost });
@@ -206,7 +227,7 @@ async function get_feed(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-async function get_post(req: Request, res: Response, next: NextFunction) {
+async function post_details(req: Request, res: Response, next: NextFunction) {
   try {
     // get post id and user id
     const { post_id } = req.query;
@@ -250,4 +271,10 @@ async function get_post(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export { get_user_posts, delete_post, like_dislike_post, get_feed, get_post };
+export {
+  get_user_posts,
+  delete_post,
+  like_dislike_post,
+  get_feed,
+  post_details,
+};

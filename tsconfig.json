@@ -11,6 +11,11 @@
       "allowImportingTsExtensions": true,
       "resolveJsonModule": true,
       "esModuleInterop": true,
+      "types": [
+        // ... your other types
+        "node"
+      ],
+      // "declaration": true,
     },
     "ts-node": {
       "esm": true

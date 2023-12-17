@@ -2,6 +2,9 @@ import { NextFunction, Request, Response } from 'express';
 import { User } from "../../models/user/user.ts";
 import { get_download_url } from '../../aws-config/aws-config.ts';
 import mongoose from "mongoose";
+import { Device, DeviceInterface } from "../../models/user/device_detail.ts";
+import sendNotification from "../../firebase-config/firebase-config.ts";
+import { NotificationType } from "../../app_constants.ts";
 
 async function get_user_details(
   req: Request,
@@ -142,6 +145,7 @@ async function follow_requests(
       return res.status(422).json({ message: "missing query params" });
     }
 
+    // TODO: Add logic to generate presigned url for profile pic
     const user = await User.findById(user_id).populate({
       path: "follow_requests",
       select: "user_name full_name profile_pic bio",
@@ -167,6 +171,7 @@ async function follow_sugestions(
       return res.status(422).json({ message: "missing query params" });
     }
 
+    // TODO: Add logic to generate presigned url for profile pic
     const users = await User.findById(user_id)
       .populate({
         path: "follow_suggestions",
@@ -186,37 +191,54 @@ async function follow_user(req: Request, res: Response, next: NextFunction) {
     //get user id
     const user_id = req.app.locals.user_id;
     const follower_id: string = req.body.follower_id;
+    var user = req.app.locals.user;
 
     if (!user_id || !follower_id) {
       return res.status(422).json({ message: "missing params" });
     }
 
-    const follower = await User.findByIdAndUpdate(
-      follower_id,
-      {
-        $addToSet: {
-          follow_requests: user_id,
+    if (!user.pending_follow_requests.includes(follower_id)) {
+      const follower = await User.findByIdAndUpdate(
+        follower_id,
+        {
+          $addToSet: {
+            follow_requests: user_id,
+          },
         },
-      },
-      { new: true }
-    );
-    if (!follower) {
-      return res.status(404).json({ message: "follower not found" });
-    }
+        { new: true }
+      );
+      if (!follower) {
+        return res.status(404).json({ message: "follower not found" });
+      }
 
-    //if the follower is present in curr user's follow_suggestions, remove it
-    const user = await User.findByIdAndUpdate(
-      user_id,
-      {
-        $pull: {
-          follow_suggestions: follower_id,
+      // notify the follower about the follow request from the curr user
+
+      // get device details of the user whose post the current user liked
+      const deviceDetails: DeviceInterface | any = await Device.findOne({
+        user_id: follower_id,
+      });
+      if (deviceDetails) {
+        await sendNotification(
+          [deviceDetails],
+          user,
+          NotificationType.follow_request
+        );
+      }
+
+      //if the follower is present in curr user's follow_suggestions, remove it
+      user = await User.findByIdAndUpdate(
+        user_id,
+        {
+          $pull: {
+            follow_suggestions: follower_id,
+          },
+          $addToSet: {
+            pending_follow_requests: follower_id,
+          },
         },
-        $addToSet: {
-          pending_follow_requests: follower_id,
-        },
-      },
-      { new: true }
-    );
+        { new: true }
+      );
+    }
 
     return res.status(201).json({ "user": user?.toJSON() });
   } catch (err) {
@@ -335,6 +357,7 @@ async function followers_list(req: Request, res: Response, next: NextFunction) {
       return res.status(422).json({ message: "missing query params" });
     }
 
+    // TODO: Add logic to generate presigned url for profile pic
     const users = await User.findById(user_id).populate({
       path: "followers",
       select: "user_name full_name profile_pic bio",
@@ -354,6 +377,7 @@ async function following_list(req: Request, res: Response, next: NextFunction) {
       return res.status(422).json({ message: "missing query params" });
     }
 
+    // TODO: Add logic to generate presigned url for profile pic
     const users = await User.findById(user_id).populate({
       path: "following",
       select: "user_name full_name profile_pic bio",

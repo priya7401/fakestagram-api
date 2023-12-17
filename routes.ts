@@ -24,7 +24,7 @@ router.get("/post_management/posts", posts_controller.get_user_posts);
 router.put("/post_management/posts/like", posts_controller.like_dislike_post);
 router.delete("/post_management/posts", posts_controller.delete_post);
 router.get("/post_management/feed", posts_controller.get_feed);
-router.get("/post_management/post", posts_controller.get_post);
+router.get("/post_management/post", posts_controller.post_details);
 
 // user_management/user
 router.get(

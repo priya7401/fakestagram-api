@@ -5,6 +5,7 @@ import { get_download_url, get_upload_url } from '../../aws-config/aws-config.ts
 import { User } from "../../models/user/user.ts";
 import sendNotification from "../../firebase-config/firebase-config.ts";
 import { Device } from "../../models/user/device_detail.ts";
+import { NotificationType } from "../../app_constants.ts";
 
 async function get_presigned_url(
   req: Request,
@@ -76,7 +77,12 @@ async function upload_attachment(
     });
 
     if (user != null && followersDeviceDetails.length > 0) {
-      await sendNotification(followersDeviceDetails, user, newPost);
+      await sendNotification(
+        followersDeviceDetails,
+        user,
+        NotificationType.new_post,
+        { post: newPost }
+      );
     }
     return res.status(201).json(newPost.toJSON());
   } catch (err) {
