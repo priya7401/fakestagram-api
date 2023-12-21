@@ -29,7 +29,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
       return res.status(401).send("Unauthorized request");
     }
 
-    //   check if user exists in db
+    // check if user exists in db
     const user = await User.findById(decoded.user_id);
 
     if (!user) {

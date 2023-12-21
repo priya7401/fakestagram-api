@@ -4,6 +4,7 @@ import {
   AttachmentInterface,
   attachmentSchema,
 } from "../attachment/attachment.ts";
+import { get_download_url } from "../../aws-config/aws-config.ts";
 
 interface UserInterface {
   user_name: string;
@@ -118,6 +119,23 @@ userSchema.methods.toJSON = function () {
   delete obj.invalidate_before;
   return obj;
 };
+
+userSchema.post(/^find/, async function (res, next: any) {
+  if (Array.isArray(res)) {
+    res.forEach(async function (doc) {
+      if (doc.profile_pic && doc.profile_pic.s3_key) {
+        const preSignedUrl = await get_download_url(doc.profile_pic?.s3_key);
+        doc.profile_pic.s3_url = preSignedUrl;
+      }
+    });
+  } else {
+    if (res.profile_pic && res.profile_pic.s3_key) {
+      const preSignedUrl = await get_download_url(res.profile_pic?.s3_key);
+      res.profile_pic.s3_url = preSignedUrl;
+    }
+  }
+  next();
+});
 
 const User = mongoose.model<UserInterface>("User", userSchema);
 

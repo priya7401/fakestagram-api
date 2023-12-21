@@ -89,7 +89,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
 
     //adding random follow suggestions for the time being
     if (user.follow_suggestions.length < 15) {
-      var follow_suggestions = await (
+      var follow_suggestions = await(
         await User.aggregate([
           { $project: { _id: 1 } },
           {
@@ -142,10 +142,10 @@ async function login(req: Request, res: Response, next: NextFunction) {
       );
     }
 
-    if (user && user?.profile_pic?.s3_key != null) {
-      const preSignedUrl = await get_download_url(user.profile_pic?.s3_key);
-      user.profile_pic.s3_url = preSignedUrl;
-    }
+    // if (user && user?.profile_pic?.s3_key != null) {
+    //   const preSignedUrl = await get_download_url(user.profile_pic?.s3_key);
+    //   user.profile_pic.s3_url = preSignedUrl;
+    // }
 
     //create token
     const { token, invalidate_before } = createNewToken(email, user?.id);

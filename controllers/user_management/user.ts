@@ -34,24 +34,24 @@ async function get_user_details(
       if (!follower) {
         return res.status(422).json({ message: "User not found!" });
       }
-      if (follower.profile_pic?.s3_key) {
-        const preSignedUrl = await get_download_url(
-          follower.profile_pic?.s3_key
-        );
-        follower.profile_pic.s3_url = preSignedUrl;
-        await follower.save();
-      }
+      // if (follower.profile_pic?.s3_key) {
+      //   const preSignedUrl = await get_download_url(
+      //     follower.profile_pic?.s3_key
+      //   );
+      //   follower.profile_pic.s3_url = preSignedUrl;
+      //   await follower.save();
+      // }
       return res.status(200).json({ "user": follower.toJSON() });
     } else {
       const user = await User.findById(user_id);
       if (!user) {
         return res.status(422).json({ message: "User not found!" });
       }
-      if (user.profile_pic?.s3_key) {
-        const preSignedUrl = await get_download_url(user.profile_pic?.s3_key);
-        user.profile_pic.s3_url = preSignedUrl;
-        await user.save();
-      }
+      // if (user.profile_pic?.s3_key) {
+      //   const preSignedUrl = await get_download_url(user.profile_pic?.s3_key);
+      //   user.profile_pic.s3_url = preSignedUrl;
+      //   await user.save();
+      // }
       return res.status(200).json({ "user": user.toJSON() });
     }
   } catch (err) {
@@ -145,7 +145,6 @@ async function follow_requests(
       return res.status(422).json({ message: "missing query params" });
     }
 
-    // TODO: Add logic to generate presigned url for profile pic
     const user = await User.findById(user_id).populate({
       path: "follow_requests",
       select: "user_name full_name profile_pic bio",
@@ -171,13 +170,11 @@ async function follow_sugestions(
       return res.status(422).json({ message: "missing query params" });
     }
 
-    // TODO: Add logic to generate presigned url for profile pic
-    const users = await User.findById(user_id)
-      .populate({
-        path: "follow_suggestions",
-        select: "user_name full_name profile_pic bio",
-      })
-      .exec();
+    const users = await User.findById(user_id).populate({
+      path: "follow_suggestions",
+      select: "user_name full_name profile_pic bio",
+    });
+    console.log(users?.follow_suggestions);
     return res
       .status(200)
       .json({ "follow_suggestions": users?.follow_suggestions ?? [] });
@@ -357,7 +354,6 @@ async function followers_list(req: Request, res: Response, next: NextFunction) {
       return res.status(422).json({ message: "missing query params" });
     }
 
-    // TODO: Add logic to generate presigned url for profile pic
     const users = await User.findById(user_id).populate({
       path: "followers",
       select: "user_name full_name profile_pic bio",
@@ -377,7 +373,6 @@ async function following_list(req: Request, res: Response, next: NextFunction) {
       return res.status(422).json({ message: "missing query params" });
     }
 
-    // TODO: Add logic to generate presigned url for profile pic
     const users = await User.findById(user_id).populate({
       path: "following",
       select: "user_name full_name profile_pic bio",
