@@ -2,7 +2,6 @@ import { User } from "../../models/user/user.ts";
 import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
-import { get_download_url } from "../../aws-config/aws-config.ts";
 import { Device } from "../../models/user/device_detail.ts";
 import { createNewToken } from "../../app-config/app-config.ts";
 
@@ -89,7 +88,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
 
     //adding random follow suggestions for the time being
     if (user.follow_suggestions.length < 15) {
-      var follow_suggestions = await(
+      var follow_suggestions = await (
         await User.aggregate([
           { $project: { _id: 1 } },
           {
@@ -141,11 +140,6 @@ async function login(req: Request, res: Response, next: NextFunction) {
         { new: true }
       );
     }
-
-    // if (user && user?.profile_pic?.s3_key != null) {
-    //   const preSignedUrl = await get_download_url(user.profile_pic?.s3_key);
-    //   user.profile_pic.s3_url = preSignedUrl;
-    // }
 
     //create token
     const { token, invalidate_before } = createNewToken(email, user?.id);

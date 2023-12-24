@@ -3,7 +3,10 @@ import jwt from "jsonwebtoken";
 import { AppConstants } from "../app_constants.ts";
 import mongoose, { Error } from "mongoose";
 import { MongoError } from "mongodb";
-import { User } from "../models/user/user.ts";
+import { User, UserInterface } from "../models/user/user.ts";
+import mung from "express-mung";
+import { get_download_url } from "../aws-config/aws-config.ts";
+import { PostInterface } from "../models/post/post.ts";
 
 interface CustomJwtPayload extends jwt.JwtPayload {
   email: string;
@@ -93,4 +96,85 @@ const createNewToken = (email: string, id: mongoose.Schema.Types.ObjectId) => {
   return { token: token, invalidate_before: invalidate_before };
 };
 
-export { verifyToken, errorHandler, createNewToken };
+const _getProfilePicPresignedUrl = async (user: UserInterface) => {
+  if (user?.profile_pic?.s3_key) {
+    const presigned_url = await get_download_url(
+      user?.profile_pic?.s3_key ?? ""
+    );
+    user.profile_pic.s3_url = presigned_url;
+  }
+  return user;
+};
+
+const _getPostPresignedUrl = async (post: PostInterface) => {
+  if (post?.attachment?.s3_key) {
+    const presigned_url = await get_download_url(
+      post?.attachment?.s3_key ?? ""
+    );
+    post.attachment.s3_url = presigned_url;
+  }
+  return post;
+};
+
+const mungTransformer = async (body: any, req: Request, res: Response) => {
+  try {
+    // when single user details are returned
+    if (body?.user) {
+      body.user = await _getProfilePicPresignedUrl(body?.user as UserInterface);
+    }
+
+    // when single post details are returned
+    if (body?.post) {
+      body.post = await _getPostPresignedUrl(body?.post as PostInterface);
+    }
+
+    // following list
+    if (Array.isArray(body?.following)) {
+      for (var user of body?.following) {
+        user = await _getProfilePicPresignedUrl(user as UserInterface);
+      }
+    }
+
+    // when list of posts are returned along with user details
+    if (Array.isArray(body?.posts)) {
+      for (var post of body?.posts) {
+        post = await _getPostPresignedUrl(post as PostInterface);
+        if (post?.user_details) {
+          post.user_details = await _getProfilePicPresignedUrl(
+            post?.user_details as UserInterface
+          );
+        }
+      }
+    }
+
+    // follow_suggestions list
+    if (Array.isArray(body?.follow_suggestions)) {
+      for (var user of body?.follow_suggestions) {
+        user = await _getProfilePicPresignedUrl(user as UserInterface);
+      }
+    }
+
+    // follow_requests list
+    if (Array.isArray(body?.follow_requests)) {
+      for (var user of body?.follow_requests) {
+        user = await _getProfilePicPresignedUrl(user as UserInterface);
+      }
+    }
+
+    // followers list
+    if (Array.isArray(body?.followers)) {
+      for (var user of body?.followers) {
+        user = await _getProfilePicPresignedUrl(user as UserInterface);
+      }
+    }
+
+    return body ?? {};
+  } catch (error) {
+    console.log(">>>>>>>>> mungTransformer error: ", error);
+    return body ?? {};
+  }
+};
+
+const attachmentMiddleware = mung.jsonAsync(mungTransformer);
+
+export { verifyToken, errorHandler, createNewToken, attachmentMiddleware };

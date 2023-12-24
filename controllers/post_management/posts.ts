@@ -1,6 +1,5 @@
-import { NextFunction, Request, Response } from 'express';
-import { get_download_url } from '../../aws-config/aws-config.ts';
-import { Post, PostInterface } from '../../models/post/post.ts';
+import { NextFunction, Request, Response } from "express";
+import { Post, PostInterface } from "../../models/post/post.ts";
 import { User, UserInterface } from "../../models/user/user.ts";
 import mongoose from "mongoose";
 import sendNotification from "../../firebase-config/firebase-config.ts";
@@ -52,15 +51,9 @@ async function get_user_posts(req: Request, res: Response, next: NextFunction) {
     }
 
     let posts = [];
-    //get presinged url for all the posts
     for (let post of userPosts) {
       var customPost: CustomPost = post.toObject();
-      // const preSignedUrl = await get_download_url(
-      //   post.attachment?.s3_key ?? ""
-      // );
-      // if (post.attachment) {
-      //   customPost.attachment.s3_url = preSignedUrl;
-      // }
+
       //update if current user has liked this post or not
       customPost.user_liked = post.user_likes.includes(user_id) ?? false;
       if (follower_id && mongoose.isValidObjectId(follower_id)) {
@@ -173,12 +166,8 @@ async function get_feed(req: Request, res: Response, next: NextFunction) {
       return res.status(422).json({ "message": "missing query params" });
     }
 
-    // 1. get all posts that are public
-    // 2. get NEW posts of users that the current user is following - handled in FE when push notification is sent
-
     let posts = [];
 
-    // 1. get all posts that are public
     posts = await Post.find({ user_id: { $ne: user_id } }).populate({
       path: "user_id",
       match: {
@@ -191,18 +180,12 @@ async function get_feed(req: Request, res: Response, next: NextFunction) {
     }
 
     let feed = [];
-    //get presinged url for all the posts
     for (let post of posts) {
       // find() returns all docs, so the condition in populate works
       // by making the user_id = null whose accounts are not public
       if (post.user_id != null) {
         var customPost: CustomPost = post.toObject();
-        // const preSignedUrl = await get_download_url(
-        //   post.attachment?.s3_key ?? ""
-        // );
-        // if (post.attachment) {
-        //   customPost.attachment.s3_url = preSignedUrl;
-        // }
+
         //update if current user has liked this post or not
         customPost.user_liked = post.user_likes.includes(user_id) ?? false;
         //the user_id will be like an object of type "User" as populate is used:
@@ -210,12 +193,7 @@ async function get_feed(req: Request, res: Response, next: NextFunction) {
         //FE needs to receive "user_id" as a string and not an object
         customPost.user_id = post.user_id._id;
         var userDetails: UserInterface | any = post.user_id;
-        // if (userDetails.profile_pic && userDetails.profile_pic.s3_key) {
-        //   const profilePicPreSignedUrl = await get_download_url(
-        //     post.attachment?.s3_key ?? ""
-        //   );
-        //   userDetails.profile_pic.s3_url = profilePicPreSignedUrl;
-        // }
+
         customPost.user_details = userDetails;
         feed.push(customPost);
       }
@@ -244,22 +222,11 @@ async function post_details(req: Request, res: Response, next: NextFunction) {
 
     if (post != null) {
       var customPost: CustomPost = post.toObject();
-      // const preSignedUrl = await get_download_url(
-      //   post.attachment?.s3_key ?? ""
-      // );
-      // if (post.attachment) {
-      //   customPost.attachment.s3_url = preSignedUrl;
-      // }
       //update if current user has liked this post or not
       customPost.user_liked = post.user_likes.includes(user_id) ?? false;
+
       var userDetails: UserInterface | any = post.user_id;
       customPost.user_id = userDetails._id;
-      // if (userDetails.profile_pic && userDetails.profile_pic.s3_key) {
-      //   const profilePicPreSignedUrl = await get_download_url(
-      //     post.attachment?.s3_key ?? ""
-      //   );
-      //   userDetails.profile_pic.s3_url = profilePicPreSignedUrl;
-      // }
       customPost.user_details = userDetails;
     } else {
       return res.status(404).json({ "mesage": "Post not found!" });

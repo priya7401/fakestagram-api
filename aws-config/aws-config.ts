@@ -42,11 +42,9 @@ async function get_download_url(key: string) {
 
     const command = new GetObjectCommand(s3UploadParams);
 
-    const preSignedUrl = await getSignedUrl(
-        s3Client,
-        command,
-        { expiresIn: 600 }
-    );
+    const preSignedUrl = await getSignedUrl(s3Client, command, {
+      expiresIn: 600,
+    });
 
     return preSignedUrl;
 }

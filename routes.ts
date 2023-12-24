@@ -3,10 +3,10 @@ import * as auth_controller from "./controllers/user_management/auth.ts";
 import * as user_controller from "./controllers/user_management/user.ts";
 import * as attachment_controller from "./controllers/attachment_management/attachment.ts";
 import * as posts_controller from "./controllers/post_management/posts.ts";
-import { verifyToken } from "./app-config/app-config.ts";
+import { attachmentMiddleware, verifyToken } from "./app-config/app-config.ts";
 
 const router: Router = express.Router();
-
+router.use(attachmentMiddleware);
 // user_management/auth
 router.post("/user_management/auth/register", auth_controller.register);
 router.post("/user_management/auth/login", auth_controller.login);

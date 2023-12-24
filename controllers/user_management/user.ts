@@ -34,24 +34,12 @@ async function get_user_details(
       if (!follower) {
         return res.status(422).json({ message: "User not found!" });
       }
-      // if (follower.profile_pic?.s3_key) {
-      //   const preSignedUrl = await get_download_url(
-      //     follower.profile_pic?.s3_key
-      //   );
-      //   follower.profile_pic.s3_url = preSignedUrl;
-      //   await follower.save();
-      // }
       return res.status(200).json({ "user": follower.toJSON() });
     } else {
       const user = await User.findById(user_id);
       if (!user) {
         return res.status(422).json({ message: "User not found!" });
       }
-      // if (user.profile_pic?.s3_key) {
-      //   const preSignedUrl = await get_download_url(user.profile_pic?.s3_key);
-      //   user.profile_pic.s3_url = preSignedUrl;
-      //   await user.save();
-      // }
       return res.status(200).json({ "user": user.toJSON() });
     }
   } catch (err) {

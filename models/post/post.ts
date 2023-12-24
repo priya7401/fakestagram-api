@@ -3,7 +3,6 @@ import {
   attachmentSchema,
   AttachmentInterface,
 } from "../attachment/attachment.ts";
-import { get_download_url } from "../../aws-config/aws-config.ts";
 
 interface PostInterface {
   likes: number;
@@ -46,23 +45,6 @@ const postSchema = new mongoose.Schema(
     timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
   }
 );
-
-postSchema.post(/^find/, async function (res, next: any) {
-  if (Array.isArray(res)) {
-    res.forEach(async function (doc) {
-      if (doc.attachment && doc.attachment.s3_key) {
-        const preSignedUrl = await get_download_url(doc.attachment?.s3_key);
-        doc.attachment.s3_url = preSignedUrl;
-      }
-    });
-  } else {
-    if (res.attachment && res.attachment.s3_key) {
-      const preSignedUrl = await get_download_url(res.attachment?.s3_key);
-      res.attachment.s3_url = preSignedUrl;
-    }
-  }
-  next();
-});
 
 const Post = mongoose.model<PostInterface>("Post", postSchema);
 
