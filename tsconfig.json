@@ -1,25 +1,28 @@
 {
-    "compilerOptions": {
-      "outDir": "./built",
-      "allowJs": true,
-      "target": "ES6",
-      "module": "NodeNext",
-      "moduleResolution": "NodeNext",
-      "noImplicitAny": true,
-      "strict": true,
-      "noEmit": true,
-      "allowImportingTsExtensions": true,
-      "resolveJsonModule": true,
-      "esModuleInterop": true,
-      "types": [
-        // ... your other types
-        "node"
-      ],
-      // "declaration": true,
-    },
-    "ts-node": {
-      "esm": true
+  "compilerOptions": {
+    "outDir": "./built",
+    "allowJs": true,
+    "target": "ES6",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noImplicitAny": true,
+    "strict": true,
+    // "noEmit": true,
+    // "skipLibCheck": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "types": [
+      // ... your other types
+      "node"
+    ],
+    // "declaration": true,
   },
-    // "include": ["./src/**/*"]
-    // "exclude": ["node_modules"]
-  }
+  "ts-node": {
+    "esm": true
+},
+  "include": ["./**/*"]
+  // "exclude": ["node_modules"]
+}

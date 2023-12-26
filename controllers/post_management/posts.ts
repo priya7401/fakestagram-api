@@ -50,7 +50,7 @@ async function get_user_posts(req: Request, res: Response, next: NextFunction) {
       return res.status(200).json({ "posts": [] });
     }
 
-    let posts = [];
+    let posts: CustomPost[] = [];
     for (let post of userPosts) {
       var customPost: CustomPost = post.toObject();
 
@@ -166,7 +166,7 @@ async function get_feed(req: Request, res: Response, next: NextFunction) {
       return res.status(422).json({ "message": "missing query params" });
     }
 
-    let posts = [];
+    let posts: [] | any;
 
     posts = await Post.find({ user_id: { $ne: user_id } }).populate({
       path: "user_id",
@@ -179,7 +179,7 @@ async function get_feed(req: Request, res: Response, next: NextFunction) {
       return res.status(200).json({ "posts": [] });
     }
 
-    let feed = [];
+    let feed: CustomPost[] = [];
     for (let post of posts) {
       // find() returns all docs, so the condition in populate works
       // by making the user_id = null whose accounts are not public

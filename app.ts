@@ -22,8 +22,8 @@ async function run(): Promise<void> {
 }
 run().catch(err => console.log(err));
   
-app.listen(AppConstants.apiPort ?? 3000, function() {
-    console.log("Server started on port " + AppConstants.apiPort);
+app.listen(AppConstants.apiPort || 3000, function () {
+  console.log("Server started on port " + AppConstants.apiPort);
 });
 
 app.use(errorHandler);

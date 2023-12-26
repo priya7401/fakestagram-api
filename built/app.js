@@ -7,14 +7,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var _a;
 import express from "express";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import router from "./routes.js";
 import morgan from "morgan";
-import * as jwt from "jsonwebtoken";
-import AppConstants from "./app_constants.js";
+import { AppConstants } from "./app_constants.js";
+import { errorHandler } from "./app-config/app-config.js";
 const app = express();
 //API logging
 app.use(morgan("combined"));
@@ -30,22 +29,7 @@ function run() {
     });
 }
 run().catch(err => console.log(err));
-// mongoose.connect(AppConstants.mongoURI ?? "");
-app.listen((_a = AppConstants.apiPort) !== null && _a !== void 0 ? _a : 3000, function () {
+app.listen(AppConstants.apiPort || 3000, function () {
     console.log("Server started on port " + AppConstants.apiPort);
 });
-const verifyToken = (req, res, next) => {
-    var _a;
-    const token = req.body.token;
-    if (!token) {
-        res.status(401).send("Unauthorized request");
-    }
-    try {
-        const decoded = jwt.verify(token, (_a = AppConstants.jwtTokenKey) !== null && _a !== void 0 ? _a : "");
-    }
-    catch (err) {
-        console.log(err);
-        res.status(401).send("Unauthorized request");
-    }
-    next();
-};
+app.use(errorHandler);
