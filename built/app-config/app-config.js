@@ -96,6 +96,7 @@ const _getPostPresignedUrl = (post) => __awaiter(void 0, void 0, void 0, functio
     return post;
 });
 const mungTransformer = (body, req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _j, _k;
     try {
         // when single user details are returned
         if (body === null || body === void 0 ? void 0 : body.user) {
@@ -104,6 +105,9 @@ const mungTransformer = (body, req, res) => __awaiter(void 0, void 0, void 0, fu
         // when single post details are returned
         if (body === null || body === void 0 ? void 0 : body.post) {
             body.post = yield _getPostPresignedUrl(body === null || body === void 0 ? void 0 : body.post);
+            if ((_j = body === null || body === void 0 ? void 0 : body.post) === null || _j === void 0 ? void 0 : _j.user_details) {
+                body.post.user_details = yield _getProfilePicPresignedUrl((_k = body === null || body === void 0 ? void 0 : body.post) === null || _k === void 0 ? void 0 : _k.user_details);
+            }
         }
         // following list
         if (Array.isArray(body === null || body === void 0 ? void 0 : body.following)) {

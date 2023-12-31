@@ -68,7 +68,7 @@ function upload_attachment(req, res, next) {
                 path: "user_id",
             });
             if (user != null && followersDeviceDetails.length > 0) {
-                yield sendNotification(followersDeviceDetails, user, NotificationType.new_post, newPost );
+                yield sendNotification(followersDeviceDetails, user, NotificationType.new_post, newPost);
             }
             return res.status(201).json(newPost.toJSON());
         }

@@ -8,12 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import admin from "firebase-admin";
-import serviceAccount from "./social-media-app-ac32b-firebase-adminsdk-9uodr-53bcb88667.json"  assert { type: "json" };
+import serviceAccount from "./social-media-app-ac32b-firebase-adminsdk-9uodr-53bcb88667.json" assert { type: "json" };
 import { NotificationType } from "../app_constants.js";
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
 });
 function sendNotification(deviceDetails, user_details, notification_type, post) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const fcmTokens = deviceDetails.map((deviceDetails) => deviceDetails.fcm_device_token);
         console.log("FCM notification sent to following device tokens: ", fcmTokens);
@@ -44,8 +45,8 @@ function sendNotification(deviceDetails, user_details, notification_type, post) 
             data: {
                 "type": NotificationType[notification_type],
                 "user_id": user_details.id,
-                "post_id": post.id ?? "",
-              },
+                "post_id": (_a = post.id) !== null && _a !== void 0 ? _a : "",
+            },
         };
         yield admin.messaging().sendEachForMulticast(message);
     });

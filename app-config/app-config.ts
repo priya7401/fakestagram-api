@@ -126,6 +126,11 @@ const mungTransformer = async (body: any, req: Request, res: Response) => {
     // when single post details are returned
     if (body?.post) {
       body.post = await _getPostPresignedUrl(body?.post as PostInterface);
+      if (body?.post?.user_details) {
+        body.post.user_details = await _getProfilePicPresignedUrl(
+          body?.post?.user_details as UserInterface
+        );
+      }
     }
 
     // following list
