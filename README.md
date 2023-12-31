@@ -1,4 +1,4 @@
-Steps to run the project in local:
+## Steps to run the project in local:
 
 1. Create .env file inside project folder with the following contents:
    ```
@@ -14,3 +14,7 @@ Steps to run the project in local:
 3. Add the firebase admin sdk private key json file inside the "firebase-config" directory
 4. Change the import statement for the above json file in firebase-config.ts file
 5. Run "npm dev" - this will start the app.ts file as the starting point for the server using nodemon
+
+
+## Postman API collection can be downloaded from the following drive link:
+https://drive.google.com/drive/folders/1aXMHo093ErUAvmIa-W5Wv2Jkgb02uoxp?usp=sharing
