@@ -22,16 +22,11 @@ async function sendNotification(
 
   var title: string = "";
   var body: string = "";
-  let data = new Map<string, string>([
-    ["type", NotificationType[notification_type]],
-    ["user_id", user_details.id],
-  ]);
 
   switch (notification_type) {
     case NotificationType.new_post:
       title = "Post Alert!";
       body = "New post from " + user_details.user_name;
-      data.set("post_id", post.id);
       break;
     case NotificationType.follow_request:
       title = "Follow Request";
@@ -40,7 +35,6 @@ async function sendNotification(
     case NotificationType.post_like:
       title = "Post Activity";
       body = user_details.user_name + " has liked your post";
-      data.set("post_id", post.id);
       break;
     default:
       break;
@@ -52,7 +46,11 @@ async function sendNotification(
       title: title,
       body: body,
     },
-    data: Object.fromEntries(data),
+    data: {
+      "type": NotificationType[notification_type],
+      "user_id": user_details.id,
+      "post_id": post.id ?? "",
+    },
   };
 
   await admin.messaging().sendEachForMulticast(message);

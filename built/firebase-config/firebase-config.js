@@ -19,15 +19,10 @@ function sendNotification(deviceDetails, user_details, notification_type, post) 
         console.log("FCM notification sent to following device tokens: ", fcmTokens);
         var title = "";
         var body = "";
-        let data = new Map([
-            ["type", NotificationType[notification_type]],
-            ["user_id", user_details.id],
-        ]);
         switch (notification_type) {
             case NotificationType.new_post:
                 title = "Post Alert!";
                 body = "New post from " + user_details.user_name;
-                data.set("post_id", post.id);
                 break;
             case NotificationType.follow_request:
                 title = "Follow Request";
@@ -36,7 +31,6 @@ function sendNotification(deviceDetails, user_details, notification_type, post) 
             case NotificationType.post_like:
                 title = "Post Activity";
                 body = user_details.user_name + " has liked your post";
-                data.set("post_id", post.id);
                 break;
             default:
                 break;
@@ -47,7 +41,11 @@ function sendNotification(deviceDetails, user_details, notification_type, post) 
                 title: title,
                 body: body,
             },
-            data: Object.fromEntries(data),
+            data: {
+                "type": NotificationType[notification_type],
+                "user_id": user_details.id,
+                "post_id": post.id ?? "",
+              },
         };
         yield admin.messaging().sendEachForMulticast(message);
     });

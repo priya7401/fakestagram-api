@@ -81,7 +81,7 @@ async function upload_attachment(
         followersDeviceDetails,
         user,
         NotificationType.new_post,
-        { post: newPost }
+        newPost
       );
     }
     return res.status(201).json(newPost.toJSON());
